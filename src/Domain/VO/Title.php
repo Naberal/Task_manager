@@ -15,4 +15,8 @@ readonly class Title
             throw new InvalidArgumentException('Title cannot be longer than 100 characters');
         }
     }
+    public function __toString(): string
+    {
+        return $this->title;
+    }
 }

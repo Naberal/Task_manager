@@ -12,4 +12,9 @@ class Description
             throw new InvalidArgumentException('Description cannot be empty');
         }
     }
+
+    public function __toString(): string
+    {
+        return $this->description;
+    }
 }

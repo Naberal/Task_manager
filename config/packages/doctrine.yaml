@@ -8,6 +8,10 @@ doctrine:
 
         profiling_collect_backtrace: '%kernel.debug%'
         use_savepoints: true
+        types:
+            task_id: App\Infrastructure\DB\DoctrineTypes\TaskIdType
+            title: App\Infrastructure\DB\DoctrineTypes\TitleType
+            description: App\Infrastructure\DB\DoctrineTypes\DescriptionType
     orm:
         auto_generate_proxy_classes: true
         enable_lazy_ghost_objects: true

@@ -2,8 +2,8 @@
 
 namespace App\Domain\VO;
 
-enum Status
+enum Status: string
 {
-    case DONE;
-    case TODO;
+    case DONE = 'done';
+    case TODO = 'todo';
 }
