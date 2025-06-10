@@ -6,7 +6,10 @@ namespace App\Infrastructure;
 
 use App\Application\API\TaskCreator;
 use App\Application\API\TaskEditor;
+use App\Application\API\TaskLoader;
 use App\Application\API\TaskRemover;
+use App\Application\DTO\Sort;
+use App\Application\DTO\TaskFilters;
 use App\Domain\Entities\Task;
 use App\Domain\VO\Description;
 use App\Domain\VO\Priority;
@@ -17,10 +20,12 @@ use App\Lib\IdGenerator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Attribute\MapQueryParameter;
 use Symfony\Component\HttpKernel\Attribute\MapQueryString;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 
+//15.30
 #[Route('/api', name: 'api_')]
 class ApiTaskController extends AbstractController
 {
@@ -46,9 +51,14 @@ class ApiTaskController extends AbstractController
     }
 
     #[Route('/myTasks', name: 'my_tasks', methods: ['GET'])]
-    public function getMyTasks(): Response
-    {
-        return $this->json([]);
+    public function getMyTasks(
+        TaskLoader                    $loader,
+        #[MapQueryParameter] ?string  $query = null,
+        #[MapQueryString] TaskFilters $filter = new TaskFilters(),
+        #[MapQueryString] Sort        $sort = new Sort()
+    ): Response {
+        $tasks = $loader->loadBy($query, $filter, $sort);
+        return $this->json($tasks);
     }
 
     #[Route('/task/{id}/done', name: 'mark_as_done', methods: ['PUT'])]

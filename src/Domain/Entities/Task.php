@@ -16,10 +16,12 @@ use DateTimeImmutable;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\Id;
+use Doctrine\ORM\Mapping\Index;
 use Doctrine\ORM\Mapping\Table;
 
 #[Entity(repositoryClass: DbTaskRepository::class)]
 #[Table(name: 'tasks')]
+#[Index(fields: ["title","description"], name: "search", flags: ["fulltext"])]
 class Task
 {
     public function __construct(

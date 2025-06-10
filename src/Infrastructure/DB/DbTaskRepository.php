@@ -7,6 +7,8 @@ use App\Domain\Entities\Task;
 use App\Domain\Service\TaskRepository;
 use App\Domain\VO\TaskId;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\DBAL\ArrayParameterType;
+use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\LockMode;
 use Doctrine\Persistence\ManagerRegistry;
 use RuntimeException;
@@ -24,14 +26,38 @@ class DbTaskRepository extends ServiceEntityRepository implements TaskRepository
         $this->getEntityManager()->flush();
     }
 
-    public function findBy(
-        array  $criteria,
-        ?array $orderBy = null,
-        ?int   $limit = null,
-        ?int   $offset = null
+    public function loadBy(
+        ?string $searchTerm = null,
+        array $statuses = [],
+        array $priorities = [],
+        array $sortBy = []
     ): array
     {
-        return parent::findBy($criteria, $orderBy, $limit, $offset);
+        $conn = $this->getEntityManager()->getConnection();
+
+        $orderBy = [];
+        foreach ($sortBy as $field => $dir) {
+            $dir = strtoupper($dir) === 'DESC' ? 'DESC' : 'ASC';
+            if (!in_array($field, ['createdAt', 'completedAt', 'priority'])) {
+                continue;
+            }
+            $orderBy[] = "$field $dir";
+        }
+
+        $sql = "
+        SELECT * FROM task
+        WHERE MATCH(title, description) AGAINST (:query IN BOOLEAN MODE)
+        AND status IN (:statuses)
+        AND priority IN (:priorities)
+        " . (!empty($orderBy) ? 'ORDER BY ' . implode(', ', $orderBy) : '');
+
+        $stmt = $conn->prepare($sql);
+        $stmt->bindValue('query' , $searchTerm);
+        $stmt->bindValue('statuses' , $statuses,ArrayParameterType::STRING);
+        $stmt->bindValue('priorities', $priorities,ArrayParameterType::INTEGER);
+        $result = executeQuery();
+
+        return $result->fetchAllAssociative();
     }
 
     public function remove(TaskId $id): void

@@ -16,11 +16,18 @@ interface TaskRepository
     public function getById(TaskId $id): ?Task;
 
     /**
-     * @param array $criteria
-     * @param array|null $orderBy
+     * @param string|null $searchTerm
+     * @param Status[] $statuses
+     * @param Priority[] $priorities
+     * @param array $sortBy
      * @return Task[]
      */
-    public function findBy(array $criteria, ?array $orderBy = null): array;
+    public function loadBy(
+        ?string $searchTerm = null,
+        array $statuses = [],
+        array $priorities = [],
+        array $sortBy = []
+    ): array;
 
     public function remove(TaskId $id): void;
 

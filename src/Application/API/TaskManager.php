@@ -20,6 +20,12 @@ class TaskManager implements TaskCreator, TaskEditor, TaskRemover
     {
     }
 
+    /**
+     * @param TaskId $id
+     * @param TaskId|null $newParentId
+     * @return void
+     * @throws InvalidArgumentException
+     */
     public function changeParent(TaskId $id, ?TaskId $newParentId): void
     {
         $task = $this->getTask($id);
@@ -31,6 +37,12 @@ class TaskManager implements TaskCreator, TaskEditor, TaskRemover
         $this->repository->update($task);
     }
 
+    /**
+     * @param TaskId $id
+     * @param Priority $newPriority
+     * @return void
+     * @throws InvalidArgumentException
+     */
     public function changePriority(TaskId $id, Priority $newPriority): void
     {
         $task = $this->getTask($id);
@@ -41,6 +53,12 @@ class TaskManager implements TaskCreator, TaskEditor, TaskRemover
         $this->repository->update($task);
     }
 
+    /**
+     * @param TaskId $id
+     * @param Status $newStatus
+     * @return void
+     * @throws InvalidArgumentException
+     */
     public function changeStatus(TaskId $id, Status $newStatus): void
     {
         $task = $this->getTask($id);
@@ -52,6 +70,12 @@ class TaskManager implements TaskCreator, TaskEditor, TaskRemover
         $this->repository->update($task);
     }
 
+    /**
+     * @param TaskId $id
+     * @param Description $newDescription
+     * @return void
+     * @throws InvalidArgumentException
+     */
     public function editDescription(TaskId $id, Description $newDescription): void
     {
         $task = $this->getTask($id);
@@ -62,6 +86,12 @@ class TaskManager implements TaskCreator, TaskEditor, TaskRemover
         $this->repository->update($task);
     }
 
+    /**
+     * @param TaskId $id
+     * @param Title $newTitle
+     * @return void
+     * @throws InvalidArgumentException
+     */
     public function editTitle(TaskId $id, Title $newTitle): void
     {
         $task = $this->getTask($id);
@@ -72,12 +102,22 @@ class TaskManager implements TaskCreator, TaskEditor, TaskRemover
         $this->repository->update($task);
     }
 
+    /**
+     * @param Task $task
+     * @return void
+     * @throws InvalidArgumentException
+     */
     public function create(Task $task): void
     {
         $this->checkParent($task->getParentId());
         $this->repository->create($task);
     }
 
+    /**
+     * @param TaskId $id
+     * @return void
+     * @throws InvalidArgumentException|DomainException
+     */
     public function remove(TaskId $id): void
     {
         $task = $this->getTask($id);
@@ -90,6 +130,7 @@ class TaskManager implements TaskCreator, TaskEditor, TaskRemover
     /**
      * @param TaskId|null $parentId
      * @return void
+     * @throws InvalidArgumentException
      */
     private function checkParent(?TaskId $parentId): void
     {
@@ -101,6 +142,7 @@ class TaskManager implements TaskCreator, TaskEditor, TaskRemover
     /**
      * @param TaskId $id
      * @return Task
+     * @throws InvalidArgumentException
      */
     private function getTask(TaskId $id): Task
     {
