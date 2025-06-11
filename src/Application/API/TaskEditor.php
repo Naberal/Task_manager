@@ -10,7 +10,7 @@ use App\Domain\VO\Title;
 
 interface TaskEditor
 {
-    public function changeParent(TaskId $id, ?TaskId $newParentId): void;
+    public function changeEpicTask(TaskId $id, ?TaskId $newEpicTaskId): void;
 
     public function changePriority(TaskId $id, Priority $newPriority): void;
 

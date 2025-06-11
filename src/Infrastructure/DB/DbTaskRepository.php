@@ -26,13 +26,28 @@ class DbTaskRepository extends ServiceEntityRepository implements TaskRepository
         $this->getEntityManager()->flush();
     }
 
+    public function getById(TaskId $id): ?Task
+    {
+        return $this->find($id->id);
+    }
+
+    public function getSubTasks(TaskId $id): array
+    {
+        return $this->getEntityManager()->createQueryBuilder()
+            ->select('t')
+            ->from(Task::class, 't')
+            ->where('t.epicTaskId = :id')
+            ->setParameter('id', $id->id)
+            ->getQuery()
+            ->getResult();
+    }
+
     public function loadBy(
         ?string $searchTerm = null,
-        array $statuses = [],
-        array $priorities = [],
-        array $sortBy = []
-    ): array
-    {
+        array   $statuses = [],
+        array   $priorities = [],
+        array   $sortBy = []
+    ): array {
         $conn = $this->getEntityManager()->getConnection();
 
         $orderBy = [];
@@ -68,11 +83,6 @@ class DbTaskRepository extends ServiceEntityRepository implements TaskRepository
         }
         $this->getEntityManager()->remove($task);
         $this->getEntityManager()->flush();
-    }
-
-    public function getById(TaskId $id): ?Task
-    {
-        return $this->find($id->id);
     }
 
     public function update(Task $task): void

@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Application\API;
 
+use App\Application\API\Service\RelationValidator;
 use App\Domain\Entities\Task;
 use App\Domain\Service\TaskRepository;
 use App\Domain\VO\Description;
@@ -16,24 +17,27 @@ use InvalidArgumentException;
 class TaskManager implements TaskCreator, TaskEditor, TaskRemover
 {
 
-    public function __construct(private readonly TaskRepository $repository)
-    {
+    public function __construct(
+        private readonly TaskRepository    $repository,
+        private readonly RelationValidator $relationValidator
+    ) {
     }
 
     /**
      * @param TaskId $id
-     * @param TaskId|null $newParentId
+     * @param TaskId|null $newEpicTaskId
      * @return void
      * @throws InvalidArgumentException
      */
-    public function changeParent(TaskId $id, ?TaskId $newParentId): void
+    public function changeEpicTask(TaskId $id, ?TaskId $newEpicTaskId): void
     {
         $task = $this->getTask($id);
-        $this->checkParent($newParentId);
-        if ($newParentId === $task->getParentId()) {
+        if ($newEpicTaskId === $task->getEpicTaskId()) {
             return;
         }
-        $task->changeParent($newParentId);
+        $epicTask = $this->getEpicTask($newEpicTaskId);
+        $this->relationValidator->validateRelation($epicTask, $task);
+        $task->changeEpicTask($newEpicTaskId);
         $this->repository->update($task);
     }
 
@@ -66,7 +70,9 @@ class TaskManager implements TaskCreator, TaskEditor, TaskRemover
             return;
         }
         $task->changeStatus($newStatus);
-
+        $epicTask = $this->getEpicTask($task->getEpicTaskId());
+        $this->relationValidator->validateRelation($epicTask, $task);
+        $this->relationValidator->validateRelation($task, ...$this->repository->getSubTasks($id));
         $this->repository->update($task);
     }
 
@@ -109,7 +115,8 @@ class TaskManager implements TaskCreator, TaskEditor, TaskRemover
      */
     public function create(Task $task): void
     {
-        $this->checkParent($task->getParentId());
+        $epicTask = $this->getEpicTask($task->getEpicTaskId());
+        $this->relationValidator->validateRelation($epicTask, $task);
         $this->repository->create($task);
     }
 
@@ -128,15 +135,20 @@ class TaskManager implements TaskCreator, TaskEditor, TaskRemover
     }
 
     /**
-     * @param TaskId|null $parentId
-     * @return void
+     * @param TaskId|null $epicTaskId
+     * @return Task|null
      * @throws InvalidArgumentException
      */
-    private function checkParent(?TaskId $parentId): void
+    private function getEpicTask(?TaskId $epicTaskId): ?Task
     {
-        if ($parentId !== null && $this->repository->getById($parentId) === null) {
-            throw new InvalidArgumentException('Parent task does not exist');
+        if ($epicTaskId === null) {
+            return null;
         }
+        $epicTask = $this->repository->getById($epicTaskId);
+        if ($epicTask === null) {
+            throw new InvalidArgumentException('Epic task does not exist');
+        }
+        return $epicTask;
     }
 
     /**

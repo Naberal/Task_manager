@@ -25,7 +25,7 @@ use Symfony\Component\HttpKernel\Attribute\MapQueryString;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 
-//15.30
+//16
 #[Route('/api', name: 'api_')]
 class ApiTaskController extends AbstractController
 {
@@ -35,9 +35,9 @@ class ApiTaskController extends AbstractController
         #[MapRequestPayload] Title       $title,
         #[MapRequestPayload] Description $description,
         #[MapRequestPayload] Priority    $priority,
-        #[MapRequestPayload] ?TaskId     $parentId = null,
+        #[MapRequestPayload] ?TaskId     $epicTaskId = null,
     ): Response {
-        $task = new Task(new TaskId(IdGenerator::generate()), $title, $description, $priority, parentId: $parentId);
+        $task = new Task(new TaskId(IdGenerator::generate()), $title, $description, $priority, epicTaskId: $epicTaskId);
         $creator->create($task);
         return $this->json($task);
 
@@ -94,15 +94,15 @@ class ApiTaskController extends AbstractController
             $editor->changePriority($id, $priority);
         }
 
-        if (isset($requestData['status'])) {
-            $status = Status::from($requestData['status']);
-            $editor->changeStatus($id, $status);
-        }
-
         // Check if parentId is present in the request payload, even if it's null
         if (array_key_exists('parentId', $requestData)) {
             $parentId = $requestData['parentId'] !== null ? new TaskId($requestData['parentId']) : null;
-            $editor->changeParent($id, $parentId);
+            $editor->changeEpicTask($id, $parentId);
+        }
+
+        if (isset($requestData['status'])) {
+            $status = Status::from($requestData['status']);
+            $editor->changeStatus($id, $status);
         }
 
         return new Response("Task with id $id was successfully changed", 201);

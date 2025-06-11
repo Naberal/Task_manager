@@ -40,13 +40,13 @@ class Task
         #[Column(type: 'datetime_immutable', nullable: true)]
         private ?DateTimeImmutable $completedAt = null,
         #[Column(type: TaskIdType::NAME, length: 4, nullable: true)]
-        private ?TaskId            $parentId = null,
+        private ?TaskId            $epicTaskId = null,
     ) {
     }
 
-    public function changeParent(?TaskId $newParentId): void
+    public function changeEpicTask(?TaskId $newEpicTaskId): void
     {
-        $this->parentId = $newParentId;
+        $this->epicTaskId = $newEpicTaskId;
     }
 
     public function changePriority(Priority $newPriority): void
@@ -57,7 +57,9 @@ class Task
     public function changeStatus(Status $newStatus): void
     {
         if ($newStatus === Status::DONE) {
-            $this->markAsDone();
+            $this->status = Status::DONE;
+            $this->completedAt = new DateTimeImmutable();
+            return;
         }
         $this->status = $newStatus;
         $this->completedAt = null;
@@ -88,9 +90,9 @@ class Task
         return $this->description;
     }
 
-    public function getParentId(): ?TaskId
+    public function getEpicTaskId(): ?TaskId
     {
-        return $this->parentId;
+        return $this->epicTaskId;
     }
 
     public function getPriority(): Priority
@@ -106,11 +108,5 @@ class Task
     public function getTitle(): Title
     {
         return $this->title;
-    }
-
-    public function markAsDone(): void
-    {
-        $this->status = Status::DONE;
-        $this->completedAt = new DateTimeImmutable();
     }
 }
