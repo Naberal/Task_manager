@@ -61,50 +61,35 @@ class ApiTaskController extends AbstractController
         return $this->json($tasks);
     }
 
-    #[Route('/task/{id}/done', name: 'mark_as_done', methods: ['PUT'])]
-    public function markTaskAsDone(TaskEditor $editor, #[MapQueryString] TaskId $id): Response
+    #[Route('/task/{id}/done', name: 'mark_as_done', requirements: ['id' => '\S{4}'], methods: ['PUT'])]
+    public function markTaskAsDone(TaskEditor $editor, string $id): Response
     {
-        $editor->changeStatus($id, Status::DONE);
-        return new Response("Task with id $id was successfully mark as done", 201);
+        try {
+            $editor->edit(new TaskId($id), ["status"=>"done"]);
+        } catch (Exception $e) {
+            return new Response("Task with id $id cannot marc as done", 406);
+        }
+        return new Response("Task with id $id was successfully mark as done", 204);
     }
 
-    #[Route('/task/{id}', name: 'update_task', methods: ['PUT'])]
+    #[Route('/task/{id}', name: 'update_task', requirements: ['id' => '\S{4}'], methods: ['PUT'])]
     public function updateTask(
-        Request                  $request,
-        TaskEditor               $editor,
-        #[MapQueryString] TaskId $id
+        TaskEditor $editor,
+        TaskLoader $loader,
+        Request    $request,
+        string     $id
     ): Response {
         $requestData = json_decode($request->getContent(), true);
         if (empty($requestData)) {
             return new Response("No fields were updated", 400);
         }
-
-        if (isset($requestData['title'])) {
-            $title = new Title($requestData['title']);
-            $editor->editTitle($id, $title);
+        try {
+            $taskId = new TaskId($id);
+            $editor->edit($taskId, $requestData);
+        } catch (Exception $e) {
+            return new Response("Task with id $id cannot be updated", 406);
         }
 
-        if (isset($requestData['description'])) {
-            $description = new Description($requestData['description']);
-            $editor->editDescription($id, $description);
-        }
-
-        if (isset($requestData['priority'])) {
-            $priority = Priority::from($requestData['priority']);
-            $editor->changePriority($id, $priority);
-        }
-
-        // Check if parentId is present in the request payload, even if it's null
-        if (array_key_exists('parentId', $requestData)) {
-            $parentId = $requestData['parentId'] !== null ? new TaskId($requestData['parentId']) : null;
-            $editor->changeEpicTask($id, $parentId);
-        }
-
-        if (isset($requestData['status'])) {
-            $status = Status::from($requestData['status']);
-            $editor->changeStatus($id, $status);
-        }
-
-        return new Response("Task with id $id was successfully changed", 201);
+        return $this->json($loader->loadById($taskId));
     }
 }

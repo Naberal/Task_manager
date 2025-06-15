@@ -2,21 +2,16 @@
 
 namespace App\Application\API;
 
-use App\Domain\VO\Description;
 use App\Domain\VO\TaskId;
-use App\Domain\VO\Priority;
-use App\Domain\VO\Status;
-use App\Domain\VO\Title;
 
 interface TaskEditor
 {
-    public function changeEpicTask(TaskId $id, ?TaskId $newEpicTaskId): void;
-
-    public function changePriority(TaskId $id, Priority $newPriority): void;
-
-    public function changeStatus(TaskId $id, Status $newStatus): void;
-
-    public function editDescription(TaskId $id, Description $newDescription): void;
-
-    public function editTitle(TaskId $id, Title $newTitle): void;
+    /**
+     * Updates a task with the provided data
+     *
+     * @param TaskId $id
+     * @param array<string,string|int> $data Associative array of fields to update
+     * @return void
+     */
+    public function edit(TaskId $id, array $data): void;
 }

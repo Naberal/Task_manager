@@ -30,7 +30,7 @@ class RelationValidator
     private function isRelationCombined(Task $epicTask, ...$subtasks): bool
     {
         foreach ($subtasks as $subtask) {
-            if ($epicTask->id->id === $subtask->id->id || $epicTask->getEpicTaskId()->id === $subtask->id->id) {
+            if ($epicTask->id->id === $subtask->id->id || $epicTask->getEpicTaskId()?->id === $subtask->id->id) {
                 return false;
             }
         }
