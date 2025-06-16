@@ -9,9 +9,9 @@ doctrine:
         profiling_collect_backtrace: '%kernel.debug%'
         use_savepoints: true
         types:
-            task_id: App\Infrastructure\DB\DoctrineTypes\TaskIdType
-            title: App\Infrastructure\DB\DoctrineTypes\TitleType
-            description: App\Infrastructure\DB\DoctrineTypes\DescriptionType
+            task_id: App\Task\Infrastructure\DB\DoctrineTypes\TaskIdType
+            title: App\Task\Infrastructure\DB\DoctrineTypes\TitleType
+            description: App\Task\Infrastructure\DB\DoctrineTypes\DescriptionType
     orm:
         auto_generate_proxy_classes: true
         enable_lazy_ghost_objects: true
@@ -25,8 +25,8 @@ doctrine:
             App:
                 type: attribute
                 is_bundle: false
-                dir: '%kernel.project_dir%/src/Domain/Entities'
-                prefix: 'App\Domain\Entities'
+                dir: '%kernel.project_dir%/src/Task/Domain/Entities'
+                prefix: 'App\Task\Domain\Entities'
                 alias: App
         controller_resolver:
             auto_mapping: false

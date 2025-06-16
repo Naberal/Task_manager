@@ -1,5 +1,5 @@
 controllers:
     resource:
-        path: ../src/Infrastructure/
-        namespace: App\Infrastructure
+        path: ../src/Task/Infrastructure/
+        namespace: App\Task\Infrastructure
     type: attribute
