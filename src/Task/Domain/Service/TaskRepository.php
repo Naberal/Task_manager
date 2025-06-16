@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace App\Task\Domain\Service;
 
 use App\Task\Domain\Entities\Task;
+use App\Task\Domain\VO\OwnerId;
 use App\Task\Domain\VO\TaskId;
 use App\Task\Domain\VO\Priority;
 use App\Task\Domain\VO\Status;
@@ -21,6 +22,7 @@ interface TaskRepository
     public function getSubTasks(TaskId $id): array;
 
     /**
+     * @param OwnerId $ownerId
      * @param string|null $searchTerm
      * @param Status[] $statuses
      * @param Priority[] $priorities
@@ -28,6 +30,7 @@ interface TaskRepository
      * @return Task[]
      */
     public function loadBy(
+        OwnerId $ownerId,
         ?string $searchTerm = null,
         array   $statuses = [],
         array   $priorities = [],

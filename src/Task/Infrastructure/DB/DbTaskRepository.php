@@ -5,6 +5,7 @@ namespace App\Task\Infrastructure\DB;
 
 use App\Task\Domain\Entities\Task;
 use App\Task\Domain\Service\TaskRepository;
+use App\Task\Domain\VO\OwnerId;
 use App\Task\Domain\VO\Priority;
 use App\Task\Domain\VO\Status;
 use App\Task\Domain\VO\TaskId;
@@ -48,6 +49,7 @@ class DbTaskRepository extends ServiceEntityRepository implements TaskRepository
     }
 
     public function loadBy(
+        OwnerId $ownerId,
         ?string $searchTerm = null,
         array   $statuses = [],
         array   $priorities = [],
@@ -63,6 +65,7 @@ class DbTaskRepository extends ServiceEntityRepository implements TaskRepository
             $this->buildSqlQueryLoadBy($searchTerm, $statuses, $priorities, $orderBy),
             $resultSetMappingBuilder
         );
+        $query->setParameter('owner_id', $ownerId->id);
         $query->setParameter('query', "+" . $searchTerm . "*");
         $query->setParameter('statuses', array_map(fn(Status $s) => $s->value, $statuses), ArrayParameterType::STRING);
         $query->setParameter('priorities', array_map(fn(Priority $p) => $p->value, $priorities), ArrayParameterType::INTEGER);
@@ -95,7 +98,7 @@ class DbTaskRepository extends ServiceEntityRepository implements TaskRepository
      */
     private function buildSqlQueryLoadBy(?string $searchTerm, array $statuses, array $priorities, array $orderBy): string
     {
-        $sql = "SELECT * FROM tasks";
+        $sql = "SELECT * FROM tasks WHERE owner_id = :owner_id";
         $conditions = [];
 
         if (!empty($searchTerm)) {
@@ -109,7 +112,7 @@ class DbTaskRepository extends ServiceEntityRepository implements TaskRepository
         }
 
         if (!empty($conditions)) {
-            $sql .= " WHERE " . implode(" AND ", $conditions);
+            $sql .= " AND " . implode(" AND ", $conditions);
         }
 
         if (!empty($orderBy)) {

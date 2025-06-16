@@ -8,8 +8,10 @@ use App\Task\Domain\VO\TaskId;
 use App\Task\Domain\VO\Priority;
 use App\Task\Domain\VO\Status;
 use App\Task\Domain\VO\Title;
+use App\Task\Domain\VO\OwnerId;
 use App\Task\Infrastructure\DB\DbTaskRepository;
 use App\Task\Infrastructure\DB\DoctrineTypes\DescriptionType;
+use App\Task\Infrastructure\DB\DoctrineTypes\OwnerIdType;
 use App\Task\Infrastructure\DB\DoctrineTypes\TaskIdType;
 use App\Task\Infrastructure\DB\DoctrineTypes\TitleType;
 use DateTimeImmutable;
@@ -17,6 +19,7 @@ use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\Id;
 use Doctrine\ORM\Mapping\Index;
+use Doctrine\ORM\Mapping\ManyToOne;
 use Doctrine\ORM\Mapping\Table;
 
 #[Entity(repositoryClass: DbTaskRepository::class)]
@@ -27,19 +30,21 @@ class Task
     public function __construct(
         #[Id, Column(type: TaskIdType::NAME, length: 4, options: ['fixed' => true])]
         public readonly TaskId     $id,
+        #[Column(type: OwnerIdType::NAME, length: 8, options: ['fixed' => true])]
+        public readonly OwnerId    $ownerId,
         #[Column(type: TitleType::NAME, length: 100)]
         private Title              $title,
         #[Column(type: DescriptionType::NAME, length: 65535)]
         private Description        $description,
-        #[Column(enumType: "int")]
+        #[Column(enumType: "integer", options: ["check" => "priority BETWEEN 1 AND 5"])]
         private Priority           $priority,
-        #[Column(enumType: "string", length: 10)]
+        #[Column(length: 10, enumType: "string")]
         private Status             $status = Status::TODO,
-        #[Column(type: 'datetime_immutable')]
+        #[Column(type: "datetime_immutable", options: ["default" => "CURRENT_TIMESTAMP"])]
         private DateTimeImmutable  $createdAt = new DateTimeImmutable(),
-        #[Column(type: 'datetime_immutable', nullable: true)]
+        #[Column(type: "datetime_immutable", nullable: true)]
         private ?DateTimeImmutable $completedAt = null,
-        #[Column(type: TaskIdType::NAME, length: 4, nullable: true)]
+        #[Column(type: TaskIdType::NAME, length: 4, nullable: true, options: ['fixed' => true])]
         private ?TaskId            $epicTaskId = null,
     ) {
     }

@@ -10,8 +10,11 @@ doctrine:
         use_savepoints: true
         types:
             task_id: App\Task\Infrastructure\DB\DoctrineTypes\TaskIdType
+            owner_id: App\Task\Infrastructure\DB\DoctrineTypes\OwnerIdType
             title: App\Task\Infrastructure\DB\DoctrineTypes\TitleType
             description: App\Task\Infrastructure\DB\DoctrineTypes\DescriptionType
+            user_id: App\User\Infrastructure\DB\DoctrineType\UserIdType
+            apikey: App\User\Infrastructure\DB\DoctrineType\ApiKeyType
     orm:
         auto_generate_proxy_classes: true
         enable_lazy_ghost_objects: true
@@ -22,11 +25,17 @@ doctrine:
             Doctrine\DBAL\Platforms\MySQLPlatform: identity
         auto_mapping: true
         mappings:
-            App:
+            Task:
                 type: attribute
                 is_bundle: false
                 dir: '%kernel.project_dir%/src/Task/Domain/Entities'
                 prefix: 'App\Task\Domain\Entities'
+                alias: App
+            User:
+                type: attribute
+                is_bundle: false
+                dir: '%kernel.project_dir%/src/User/Domain/Entities'
+                prefix: 'App\User\Domain\Entities'
                 alias: App
         controller_resolver:
             auto_mapping: false

@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Task\Application\API;
 
+use App\Task\Application\Service\AccessAuthorizer;
 use App\Task\Application\Service\RelationValidator;
 use App\Task\Domain\Entities\Task;
 use App\Task\Domain\Service\TaskRepository;
@@ -19,7 +20,8 @@ class TaskManager implements TaskCreator, TaskEditor, TaskRemover
 
     public function __construct(
         private readonly TaskRepository    $repository,
-        private readonly RelationValidator $relationValidator
+        private readonly RelationValidator $relationValidator,
+        private readonly AccessAuthorizer  $accessAuthorizer,
     ) {
     }
 
@@ -46,6 +48,7 @@ class TaskManager implements TaskCreator, TaskEditor, TaskRemover
     public function edit(TaskId $id, array $data): void
     {
         $task = $this->getTask($id);
+        $this->accessAuthorizer->validate($task);
         if (isset($data['title'])) {
             $this->editTitle($task, new Title($data['title']));
         }
@@ -77,6 +80,7 @@ class TaskManager implements TaskCreator, TaskEditor, TaskRemover
     public function remove(TaskId $id): void
     {
         $task = $this->getTask($id);
+        $this->accessAuthorizer->validate($task);
         if ($task->getStatus() === Status::DONE) {
             throw new DomainException('Cannot remove done task');
         }

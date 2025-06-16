@@ -12,6 +12,7 @@ use App\Task\Application\DTO\Sort;
 use App\Task\Application\DTO\TaskFilters;
 use App\Task\Domain\Entities\Task;
 use App\Task\Domain\VO\Description;
+use App\Task\Domain\VO\OwnerId;
 use App\Task\Domain\VO\Priority;
 use App\Task\Domain\VO\TaskId;
 use App\Task\Domain\VO\Title;
@@ -23,8 +24,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapQueryParameter;
 use Symfony\Component\HttpKernel\Attribute\MapQueryString;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Core\Exception\AuthenticationException;
 
-//28.30
+//33.45
 #[Route('/api', name: 'api_')]
 class ApiTaskController extends AbstractController
 {
@@ -36,6 +38,7 @@ class ApiTaskController extends AbstractController
         try {
             $task = new Task(
                 new TaskId(IdGenerator::generate()),
+                new OwnerId($this->getUser()->getUserIdentifier()),
                 new Title($request->getPayload()->get("title")),
                 new Description($request->getPayload()->get("description")),
                 Priority::from($request->getPayload()->get("priority")),
@@ -54,6 +57,8 @@ class ApiTaskController extends AbstractController
     {
         try {
             $remover->remove(new TaskId($id));
+        } catch (AuthenticationException) {
+            return new Response("You are not authorized to delete this task", 401);
         } catch (Exception $e) {
             return new Response("Task with id $id cannot be removed", 406);
         }
@@ -67,7 +72,11 @@ class ApiTaskController extends AbstractController
         #[MapQueryString] TaskFilters $filter = new TaskFilters(),
         #[MapQueryString] Sort        $sort = new Sort()
     ): Response {
-        $tasks = $loader->loadBy($query, $filter, $sort);
+        try {
+            $tasks = $loader->loadBy(new OwnerId($this->getUser()->getUserIdentifier()), $query, $filter, $sort);
+        } catch (Exception $e) {
+            return new Response("Failed to load tasks", 400);
+        }
         return $this->json($tasks);
     }
 
@@ -76,6 +85,8 @@ class ApiTaskController extends AbstractController
     {
         try {
             $editor->edit(new TaskId($id), ["status" => "done"]);
+        } catch (AuthenticationException) {
+            return new Response("You are not authorized to mark this task as done", 401);
         } catch (Exception $e) {
             return new Response("Task with id $id cannot marc as done", 406);
         }
@@ -96,6 +107,8 @@ class ApiTaskController extends AbstractController
         try {
             $taskId = new TaskId($id);
             $editor->edit($taskId, $requestData);
+        } catch (AuthenticationException) {
+            return new Response("You are not authorized to update this task", 401);
         } catch (Exception $e) {
             return new Response("Task with id $id cannot be updated", 406);
         }

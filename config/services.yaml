@@ -22,6 +22,8 @@ services:
     # Configure TaskId value object for autowiring
     App\Task\Domain\VO\TaskId:
         factory: ['App\Task\Domain\VO\TaskId', 'generate']
+    App\User\Domain\VO\UserId:
+        factory: ['App\User\Domain\VO\UserId', 'generate']
 
     # Register the TaskSerializer
     App\Task\Infrastructure\Serializer\TaskSerializer:

@@ -7,6 +7,7 @@ use App\Task\Application\DTO\Sort;
 use App\Task\Application\DTO\TaskFilters;
 use App\Task\Domain\Entities\Task;
 use App\Task\Domain\Service\TaskRepository;
+use App\Task\Domain\VO\OwnerId;
 use App\Task\Domain\VO\TaskId;
 
 class TaskLoaderImpl implements TaskLoader
@@ -16,11 +17,16 @@ class TaskLoaderImpl implements TaskLoader
     }
 
     /**
+     * @param OwnerId $ownerId
+     * @param string|null $searchTerm
+     * @param TaskFilters $filterBy
+     * @param Sort $orderBy
      * @inheritDoc
      */
-    public function loadBy(?string $searchTerm, TaskFilters $filterBy, Sort $orderBy): array
+    public function loadBy(OwnerId $ownerId, ?string $searchTerm, TaskFilters $filterBy, Sort $orderBy): array
     {
         return $this->repository->loadBy(
+            $ownerId,
             $searchTerm,
             $filterBy->getStatuses(),
             $filterBy->getPriorities(),

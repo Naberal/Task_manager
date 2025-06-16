@@ -5,6 +5,7 @@ namespace App\Task\Infrastructure\Serializer;
 
 use App\Task\Domain\Entities\Task;
 use App\Task\Domain\VO\Description;
+use App\Task\Domain\VO\OwnerId;
 use App\Task\Domain\VO\Priority;
 use App\Task\Domain\VO\Status;
 use App\Task\Domain\VO\TaskId;
@@ -84,6 +85,7 @@ class TaskSerializer implements DenormalizerInterface, NormalizerInterface
     private function denormalizeTask(array $data): Task
     {
         $id = new TaskId($data['id']);
+        $ownerId = new OwnerId($data['owner_id']);
         $title = new Title($data['title']);
         $description = new Description($data['description']);
         $priority = Priority::from($data['priority']);
@@ -94,6 +96,7 @@ class TaskSerializer implements DenormalizerInterface, NormalizerInterface
 
         return new Task(
             $id,
+            $ownerId,
             $title,
             $description,
             $priority,
