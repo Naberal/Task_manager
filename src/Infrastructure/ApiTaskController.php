@@ -50,8 +50,8 @@ class ApiTaskController extends AbstractController
         return new Response("Task with id $id was successfully deleted", 201);
     }
 
-    #[Route('/myTasks', name: 'my_tasks', methods: ['GET'])]
-    public function getMyTasks(
+    #[Route('/tasks', name: 'load_tasks', methods: ['GET'])]
+    public function getTasks(
         TaskLoader                    $loader,
         #[MapQueryParameter] ?string  $query = null,
         #[MapQueryString] TaskFilters $filter = new TaskFilters(),

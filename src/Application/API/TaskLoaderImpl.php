@@ -19,7 +19,12 @@ class TaskLoaderImpl implements TaskLoader
      */
     public function loadBy(?string $searchTerm, TaskFilters $filterBy, Sort $orderBy): array
     {
-        return $this->repository->loadBy($searchTerm, $filterBy->status, $filterBy->priority, $orderBy->getSort());
+        return $this->repository->loadBy(
+            $searchTerm,
+            $filterBy->getStatuses(),
+            $filterBy->getPriorities(),
+            $orderBy->getSort()
+        );
     }
 
     public function loadById(TaskId $id): ?Task
