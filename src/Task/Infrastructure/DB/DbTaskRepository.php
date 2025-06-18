@@ -55,18 +55,15 @@ class DbTaskRepository extends ServiceEntityRepository implements TaskRepository
         array   $priorities = [],
         array   $sortBy = []
     ): array {
-        $orderBy = [];
-        foreach ($sortBy as $field => $dir) {
-            $orderBy[] = "$field $dir";
-        }
+        $sql = "SELECT * FROM tasks WHERE owner_id = :owner_id";
+        $sql .= $this->addWhereConditions($searchTerm, $statuses, $priorities);
+        $sql .= $this->addOrderBy($sortBy);
+
         $resultSetMappingBuilder = new ResultSetMappingBuilder($this->getEntityManager());
         $resultSetMappingBuilder->addRootEntityFromClassMetadata(Task::class, 't');
-        $query = $this->getEntityManager()->createNativeQuery(
-            $this->buildSqlQueryLoadBy($searchTerm, $statuses, $priorities, $orderBy),
-            $resultSetMappingBuilder
-        );
+        $query = $this->getEntityManager()->createNativeQuery($sql, $resultSetMappingBuilder);
         $query->setParameter('owner_id', $ownerId->id);
-        $query->setParameter('query', "+" . $searchTerm . "*");
+        $query->setParameter('searchTerm', "+" . $searchTerm . "*");
         $query->setParameter('statuses', array_map(fn(Status $s) => $s->value, $statuses), ArrayParameterType::STRING);
         $query->setParameter('priorities', array_map(fn(Priority $p) => $p->value, $priorities), ArrayParameterType::INTEGER);
 
@@ -89,20 +86,34 @@ class DbTaskRepository extends ServiceEntityRepository implements TaskRepository
         $this->getEntityManager()->flush();
     }
 
+    private function addOrderBy(array $sortBy): string
+    {
+        $orderBy = [];
+        foreach ($sortBy as $field => $dir) {
+            $orderBy[] = match ($field) {
+                'priority' => "priority $dir",
+                'createdAt' => "created_at $dir",
+                'completedAt' => "completed_at $dir",
+            };
+        }
+
+        if (!empty($orderBy)) {
+            return " ORDER BY " . implode(", ", $orderBy);
+        }
+        return '';
+    }
+
     /**
      * @param string|null $searchTerm
      * @param array $statuses
      * @param array $priorities
-     * @param array $orderBy
      * @return string
      */
-    private function buildSqlQueryLoadBy(?string $searchTerm, array $statuses, array $priorities, array $orderBy): string
+    private function addWhereConditions(?string $searchTerm, array $statuses, array $priorities): string
     {
-        $sql = "SELECT * FROM tasks WHERE owner_id = :owner_id";
         $conditions = [];
-
         if (!empty($searchTerm)) {
-            $conditions[] = "MATCH(title, description) AGAINST (:query IN NATURAL LANGUAGE MODE)";
+            $conditions[] = "MATCH(title, description) AGAINST (:searchTerm IN NATURAL LANGUAGE MODE)";
         }
         if (!empty($statuses)) {
             $conditions[] = "status IN (:statuses)";
@@ -112,12 +123,9 @@ class DbTaskRepository extends ServiceEntityRepository implements TaskRepository
         }
 
         if (!empty($conditions)) {
-            $sql .= " AND " . implode(" AND ", $conditions);
+            return " AND " . implode(" AND ", $conditions);
         }
 
-        if (!empty($orderBy)) {
-            $sql .= " ORDER BY " . implode(', ', $orderBy);
-        }
-        return $sql;
+        return "";
     }
 }

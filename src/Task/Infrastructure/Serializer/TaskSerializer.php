@@ -115,9 +115,9 @@ class TaskSerializer implements DenormalizerInterface, NormalizerInterface
             'description' => (string)$task->getDescription(),
             'priority' => $task->getPriority()->value,
             'status' => $task->getStatus()->value,
-            'created_at' => $task->getCreatedAt()->format('Y-m-d\TH:i:s.u\Z'),
-            'completed_at' => $task->getCompletedAt()?->format('Y-m-d\TH:i:s.u\Z'),
-            'epic_task_id' => $task->getEpicTaskId() ? (string)$task->getEpicTaskId() : null,
+            'createdAt' => $task->getCreatedAt()->format('Y-m-d\TH:i:s.u\Z'),
+            'completedAt' => $task->getCompletedAt()?->format('Y-m-d\TH:i:s.u\Z'),
+            'epicTaskId' => $task->getEpicTaskId() ? (string)$task->getEpicTaskId() : null,
         ];
     }
 }
