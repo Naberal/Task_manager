@@ -16,6 +16,22 @@ services:
     App\:
         resource: '../src/'
 
+    App\Task\Application\Service\HierarchicRelationValidator:
+        autowire: true
+        autoconfigure: false
+        public: false
+
+    App\Task\Application\Service\StatusRelationValidator:
+            autowire: true
+            autoconfigure: false
+            public: false
+            arguments:
+                $relationValidator: '@App\Task\Application\Service\HierarchicRelationValidator'
+
+    App\Task\Application\Service\RelationValidator:
+            alias: App\Task\Application\Service\StatusRelationValidator
+            public: true
+
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
 
