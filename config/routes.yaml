@@ -3,3 +3,11 @@ controllers:
         path: ../src/Task/Infrastructure/
         namespace: App\Task\Infrastructure
     type: attribute
+
+# Redirect root URL to API documentation
+app.index:
+    path: /
+    controller: Symfony\Bundle\FrameworkBundle\Controller\RedirectController
+    defaults:
+        path: /api/doc
+        permanent: true
