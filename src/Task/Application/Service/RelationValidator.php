@@ -10,6 +10,9 @@ use DomainException;
 class RelationValidator
 {
     /**
+     * Validate if an epic task and subtask or potential subtask can have healthy relationships.
+     * It means that their statuses should not conflict and there should be no cyclical relationships
+     *
      * @param Task|null $epicTask
      * @param Task ...$subtasks
      * @return void
