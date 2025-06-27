@@ -1,10 +1,7 @@
 {
-    "name": "symfony/skeleton",
+    "name": "test/task_manager",
     "type": "project",
-    "license": "MIT",
-    "description": "A minimal Symfony project recommended to create bare bones applications",
-    "minimum-stability": "stable",
-    "prefer-stable": true,
+    "description": "Simple task manager",
     "require": {
         "php": ">=8.4.7",
         "ext-ctype": "*",
